@@ -29,10 +29,10 @@ public class Exporter {
                             for(int runIndex = 0; runIndex < 2; runIndex++)
                             {
                                 fw.write(s.name + ",");
-                                fw.write((s.rightHanded ? "Right" : "Left")  + ",");
+                                fw.write((s.goodHand == Helper.Hand.Right ? "Right" : "Left")  + ",");
                                 fw.write((s.hasGlasses ? "Yes" : "No")  + ",");
                                 fw.write((s.hasGlasses && s.glassesOn ? "Yes" : "No")  + ",");
-                                fw.write((runIndex == 0 ? "Yes" : "No")  + ",");
+                                fw.write((Helper.Hand.values()[runIndex] == Helper.Hand.Left ? "Left" : "Right") + ",");
                                 for(int lineIndex = 0; lineIndex < 18; lineIndex++)
                                 {
                                     try {
@@ -56,7 +56,7 @@ public class Exporter {
 
     public static String buildHeading()
     {
-        String heading = "Subject_name,handedness,glasses,wearing glasses,correct_hand";
+        String heading = "Subject_name,handedness,glasses,wearing glasses,hand";
         for(int i = 0; i < 18; i++)
             heading += ",line length, intersection length";
 

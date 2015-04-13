@@ -123,9 +123,9 @@ public class FormPanel extends JPanel{
         });
     }
 
-    boolean isRightHanded()
+    Helper.Hand getHandedness()
     {
-        return _handedness_btns.radio_button_2.isSelected();
+        return _handedness_btns.radio_button_1.isSelected() ? Helper.Hand.Left : Helper.Hand.Right;
     }
 
     boolean hasGlasses()

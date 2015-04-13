@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class LinePanel extends JPanel implements MouseListener{
     public static final int CLICK_PADDING = 10;
-    public static final String RUN_1_MSG = "Using your strong hand, please try and intersect all the lines at their centers.";
-    public static final String RUN_2_MSG = "Thanks. Now please do the same with the other hand.";
+    public static final String RUN_1_MSG = "Using your LEFT hand, please try and intersect all the lines at their centers.";
+    public static final String RUN_2_MSG = "Using your RIGHT hand, please try and intersect all the lines at their centers.";
     public static final String COMPLETION_MSG = "The experiment is over. Thanks for your participation! :)";
 
     private List<Integer> _activeLineIndices;

@@ -129,32 +129,32 @@ public class MainWindow extends JFrame {
 
     public void experimentComplete(Helper.ExperimentData experimentResults)
     {
-        Helper.ResultData resultData = new Helper.ResultData();
+//        Helper.ResultData resultData = new Helper.ResultData();
 
-        // Data conversions
-        for(int i = 0; i < experimentResults.line_data.length; i++)
-            resultData.line_lengths[i] = (int) Math.round(ScalingManager.toCm(experimentResults.line_data[i].length) * 100.f);
-        // Now the clicked lengths
-        for(int i = 0; i < 2; i++)
-        {
-            for(int k = 0; k < experimentResults.clicked_lengths[i].length; k++)
-            {
-                resultData.clicked_lengths[i][k] = (int) Math.round(ScalingManager.toCm(experimentResults.clicked_lengths[i][k]) * 100.f);
-            }
-        }
+//        // Data conversions
+//        for(int i = 0; i < experimentResults.line_data.length; i++)
+//            resultData.line_lengths[i] = (int) Math.round(ScalingManager.toCm(experimentResults.line_data[i].length) * 100.f);
+//        // Now the clicked lengths
+//        for(int i = 0; i < 2; i++)
+//        {
+//            for(int k = 0; k < experimentResults.clicked_lengths[i].length; k++)
+//            {
+//                resultData.clicked_lengths[i][k] = (int) Math.round(ScalingManager.toCm(experimentResults.clicked_lengths[i][k]) * 100.f);
+//            }
+//        }
 
         // Add to db
         {
-            final Helper.ResultData finalResultData = resultData;
-            final Subject finalSubject = experimentResults.subject;
+            final Helper.ExperimentData finalResultData = experimentResults;
+//            final Subject finalSubject = experimentResults.subject;
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     // Add subject
-                    m_dbManager.addSubject(finalSubject);
+                    m_dbManager.addSubject(finalResultData.subject);
                     // Add the data
                     for(int i = 0; i < 2; i++)
-                        m_dbManager.addData(finalSubject.uniqueId, i == 0, finalResultData.line_lengths, finalResultData.clicked_lengths[i]);
+                        m_dbManager.addData(finalResultData.subject.uniqueId, Helper.Hand.values()[i], finalResultData.line_data, finalResultData.clicked_lengths[i]);
 
                     m_formPanel.formPanel.reset();
                 }
@@ -278,7 +278,7 @@ public class MainWindow extends JFrame {
                     String participantId;
                     if(!(participantId = formPanel._participant_id_tf.getText().trim()).isEmpty())
                     {
-                        Subject s = new Subject(participantId, formPanel.isRightHanded(), formPanel.hasGlasses(),
+                        Subject s = new Subject(participantId, formPanel.getHandedness(), formPanel.hasGlasses(),
                                 formPanel.isWearingGlasses(), null);
                         startExperiment(s);
 //                        generateAndInsertDummyData(s);

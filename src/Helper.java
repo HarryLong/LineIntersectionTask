@@ -47,4 +47,9 @@ public class Helper
             clicked_lengths = new int[2][18];
         }
     }
+    
+    enum Hand {
+    	Left,
+    	Right
+    }
 }

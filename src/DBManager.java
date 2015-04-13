@@ -75,7 +75,7 @@ public class DBManager {
         try {
             String query = "INSERT INTO " + Subjects_Table.table_name + "("
                     + Subjects_Table.Column.subject_name.name + ", "
-                    + Subjects_Table.Column.right_handed.name + ", "
+                    + Subjects_Table.Column.handedness.name + ", "
                     + Subjects_Table.Column.glasses.name + ", "
                     + Subjects_Table.Column.wearing_glasses.name
                     + ") "
@@ -84,7 +84,7 @@ public class DBManager {
             SQLiteStatement st = db.prepare(query);
             // Perform binding
             st.bind(1, subject.name);
-            st.bind(2, subject.rightHanded ? 1: 0);
+            st.bind(2, subject.goodHand == Helper.Hand.Right ? "right": "left");
             st.bind(3, subject.hasGlasses ? 1 : 0);
             st.bind(4, subject.hasGlasses && subject.glassesOn ? 1 : 0);
             st.step();
@@ -121,11 +121,11 @@ public class DBManager {
             while(query.step())
             {
                 String subjectName = query.columnString(Subjects_Table.Column.subject_name.ordinal());
-                boolean rightHanded = query.columnInt(Subjects_Table.Column.right_handed.ordinal()) == 1;
+                Helper.Hand hand = query.columnString(Subjects_Table.Column.handedness.ordinal()).equalsIgnoreCase("right") ? Helper.Hand.Right : Helper.Hand.Left;
                 boolean glasses = query.columnInt(Subjects_Table.Column.glasses.ordinal()) == 1;
                 boolean wearingGlasses = query.columnInt(Subjects_Table.Column.wearing_glasses.ordinal()) == 1;
                 int subjectId = query.columnInt(Subjects_Table.Column._id.ordinal());
-                subjects.add(new Subject(subjectName, rightHanded, glasses, wearingGlasses, subjectId));
+                subjects.add(new Subject(subjectName, hand, glasses, wearingGlasses, subjectId));
             }
             query.dispose();
         } catch (SQLiteException e) {
@@ -141,7 +141,7 @@ public class DBManager {
     }
 
     // Data stuff
-    public void addData(int subjectId, boolean correctHand, int[] line_lengths, int[] clicked_lengths)
+    public void addData(int subjectId, Helper.Hand hand, Helper.Line[] lines, int[] clicked_lengths)
     {
         SQLiteConnection db = null;
         try {
@@ -155,7 +155,7 @@ public class DBManager {
         // Build the query
         String query = "INSERT INTO " + Data_Table.table_name + "("
                 + Data_Table.Column.subject_id.name + ", "
-                + Data_Table.Column.correct_hand.name;
+                + Data_Table.Column.hand.name;
         String subQuery = "VALUES( ?, ? ";
         Data_Table.Column[] columns = Data_Table.Column.values();
         for(int i = 2; i < columns.length; i++)
@@ -169,11 +169,11 @@ public class DBManager {
             SQLiteStatement st = db.prepare(query);
             // Perform binding
             st.bind(1, subjectId);
-            st.bind(2, correctHand ? 1 : 0);
+            st.bind(2, hand == Helper.Hand.Right ? "right": "left");
 
-            for (int i = 0; i < line_lengths.length; i++) {
+            for (int i = 0; i <  lines.length; i++) {
                 int bindIndex = (i * 2) + 3;
-                st.bind(bindIndex, line_lengths[i]);
+                st.bind(bindIndex, lines[i].length);
                 st.bind(bindIndex + 1, clicked_lengths[i]); // convert to mm
             }
             st.step();
@@ -228,8 +228,8 @@ public class DBManager {
                     ret.put(s, data);
                 }
 
-                boolean correctHand = query.columnInt(Data_Table.Column.correct_hand.ordinal()) == 1;
-                int runIndex = correctHand ? 0 : 1;
+                String hand = query.columnString(Data_Table.Column.hand.ordinal()).trim();
+                int runIndex = hand.equalsIgnoreCase("left") ? 0 : 1;
 
                 for(int i = 0; i < 18; i++)
                 {
@@ -257,7 +257,7 @@ public class DBManager {
 
         public static enum Column{
             _id("id", SQLITE_TYPE.INTEGER), subject_name("subject_name", SQLITE_TYPE.TEXT),
-            right_handed("right_handed", SQLITE_TYPE.INTEGER), glasses("glasses", SQLITE_TYPE.INTEGER),
+            handedness("handedness", SQLITE_TYPE.TEXT), glasses("glasses", SQLITE_TYPE.INTEGER),
             wearing_glasses("wearing_glasses", SQLITE_TYPE.INTEGER);
 
             Column(String name, String type)
@@ -273,7 +273,7 @@ public class DBManager {
                 "CREATE TABLE IF NOT EXISTS " + table_name + "(" +
                         Column._id.name + " " + Column._id.type + " PRIMARY KEY," +
                         Column.subject_name.name + " " + Column.subject_name.type + "," +
-                        Column.right_handed.name + " " + Column.right_handed.type + "," +
+                        Column.handedness.name + " " + Column.handedness.type + "," +
                         Column.glasses.name + " " + Column.glasses.type + "," +
                         Column.wearing_glasses.name + " " + Column.wearing_glasses.type +
                         ");";
@@ -283,7 +283,7 @@ public class DBManager {
         public static String table_name = "data";
 
         public static enum Column{
-            subject_id("subject_id", SQLITE_TYPE.INTEGER), correct_hand("correct_hand", SQLITE_TYPE.INTEGER),
+            subject_id("subject_id", SQLITE_TYPE.INTEGER), hand("hand", SQLITE_TYPE.INTEGER),
             line_1_length("line_1_length", SQLITE_TYPE.INTEGER), line_1_intersected_length("line_1_intersected_length", SQLITE_TYPE.INTEGER),
             line_2_length("line_2_length", SQLITE_TYPE.INTEGER), line_2_intersected_length("line_2_intersected_length", SQLITE_TYPE.INTEGER),
             line_3_length("line_3_length", SQLITE_TYPE.INTEGER), line_3_intersected_length("line_3_intersected_length", SQLITE_TYPE.INTEGER),
@@ -315,7 +315,7 @@ public class DBManager {
         public static final String table_creation_code =
                 "CREATE TABLE IF NOT EXISTS " + table_name + "(" +
                         Column.subject_id.name + " " + Column.subject_id.type + "," +
-                        Column.correct_hand.name + " " + Column.correct_hand.type + "," +
+                        Column.hand.name + " " + Column.hand.type + "," +
 
                         Column.line_1_length.name + " " + Column.line_1_length.type + "," +
                         Column.line_1_intersected_length.name + " " + Column.line_1_intersected_length.type + "," +
